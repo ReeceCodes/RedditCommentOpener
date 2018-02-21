@@ -1,11 +1,24 @@
 function LinksOpen(){
 	let comments = document.getElementsByClassName('comments');
 
-	//localsession holds a json object with html, date entries
-	let myJSON = JSON.parse(window.localStorage.getItem('RedditCommentOpener')) || [];
+	//localstorage holds a json object with html, date entries
+	let myJSON = [];
+	let JSONstring = '';
 	let tempJSON = [];
 	let HOURS_24 = 24 * 60 * 60 * 1000;
 	let currDate = new Date(); //use the same date for each link
+	let m = 0; //counter to fill JSON because Reddit empties localstorage if an item is greater than 1024 characters, split into multiple items and remake them after
+	JSON.parse(window.localStorage.getItem('RedditCommentOpener'))
+	while (window.localStorage.getItem('RedditCommentOpener' + m) != null)
+	{
+		JSONstring += window.localStorage.getItem('RedditCommentOpener' + m);
+		m++;
+	}
+	
+	if (JSONstring != '')
+	{
+		myJSON = JSON.parse(JSONstring);
+	}
 
 	//this might be a pretty inefficient way but there are likely less than 100 elements at any time (3-ish pages of 30 links within 24 hours)
 	//use a temporary array to hold values that are not older than 24 hours, set the original array to the remaining values, rather than figure out removing from the currently looped array
@@ -14,7 +27,7 @@ function LinksOpen(){
 		let elementDate = new Date(myJSON[j].openDate);
 		if (((currDate - elementDate) >= HOURS_24) == false)
 		{
-			tempJSON.push(myJSON[j]);			
+			tempJSON.push(myJSON[j]);
 		}
 	}
 	
@@ -32,7 +45,7 @@ function LinksOpen(){
 			let currString = '{"url" : "' + el.href + '", "openDate" : "' + currDate.toLocaleString("en-US") + '"}';
 			
 			//check if it was already opened before trying to open, tried using array.includes, array.findIndex, but I could not get any of them to return the correct value, check against full array manually
-			let prevOpened = false;						
+			let prevOpened = false;
 			for (let k = 0; k < myJSON.length; k++)
 			{
 				if (myJSON[k].url == el.href)
@@ -44,14 +57,19 @@ function LinksOpen(){
 			if (prevOpened == false)
 			{
 				myJSON.push({'url':el.href, 'openDate': currDate.toLocaleString("en-US")});
-
-				window.open(el.href, '_blank');								
+				
+				window.open(el.href, '_blank');
 			}
 		}
 	}
 
-	localStorage.setItem("RedditCommentOpener", JSON.stringify(myJSON));
-
+	JSONstring = JSON.stringify(myJSON);
+	console.log('full data:' + JSONstring);
+	let tmpJSONChunks = JSONstring.split(/(.{1023})/).filter(function(e) { return e;} ); //filter function found on SO to remove empty elements, not truly needed but the regex returns empty string for some sets so just reduces the size a bit removing them
+	for (let n = 0; n < tmpJSONChunks.length; n++)
+	{
+		window.localStorage.setItem('RedditCommentOpener' + n, tmpJSONChunks[n]);
+	}
 }
 
 LinksOpen();
