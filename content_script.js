@@ -8,10 +8,12 @@ function LinksOpen(){
 	let HOURS_24 = 24 * 60 * 60 * 1000;
 	let currDate = new Date(); //use the same date for each link
 	let m = 0; //counter to fill JSON because Reddit empties localstorage if an item is greater than 1024 characters, split into multiple items and remake them after
-	JSON.parse(window.localStorage.getItem('RedditCommentOpener'))
+	
 	while (window.localStorage.getItem('RedditCommentOpener' + m) != null)
 	{
 		JSONstring += window.localStorage.getItem('RedditCommentOpener' + m);
+		//remove the localstorage item because when refilling with new data it may not overwrite all the previous entries and cause a broken JSON object
+		window.localStorage.removeItem('RedditCommentOpener' + m);
 		m++;
 	}
 	
@@ -59,12 +61,12 @@ function LinksOpen(){
 				myJSON.push({'url':el.href, 'openDate': currDate.toLocaleString("en-US")});
 				
 				window.open(el.href, '_blank');
-			}
+}
 		}
 	}
 
 	JSONstring = JSON.stringify(myJSON);
-	console.log('full data:' + JSONstring);
+	
 	let tmpJSONChunks = JSONstring.split(/(.{1023})/).filter(function(e) { return e;} ); //filter function found on SO to remove empty elements, not truly needed but the regex returns empty string for some sets so just reduces the size a bit removing them
 	for (let n = 0; n < tmpJSONChunks.length; n++)
 	{
