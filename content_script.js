@@ -1,6 +1,15 @@
 function LinksOpen(){
 	let comments = document.getElementsByClassName('comments');
+	let comments2 = document.querySelectorAll('[data-click-id="comments"]'); //new reddit design
+	
+	let layoutChange = false;
 
+	if (comments.length == 0)
+	{
+		comments = comments2;
+		layoutChange = true;
+	}
+	
 	//localstorage holds a json object with html, date entries
 	let myJSON = [];
 	let JSONstring = '';
@@ -40,7 +49,7 @@ function LinksOpen(){
 		
 		let el = comments[i];
 
-		if (el.parentNode.parentNode.previousSibling.getElementsByClassName('stickied-tagline').length == 0) { 
+		if ((layoutChange == false && el.parentNode.parentNode.previousSibling.getElementsByClassName('stickied-tagline').length == 0) || (layoutChange == true && el.parentNode.parentNode.parentNode.parentNode.innerHTML.match('PostBadges--Sticky')  == undefined)) { 
 			//add to local storage so that it can be checked against before trying to open again, maybe can incorporate that as an optional thing to do at some day
 			//could probably use session storage instead but then going to a new session reopens all instead of just the new links (viewing more than once a day vs once)
 
